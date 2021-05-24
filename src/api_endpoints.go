@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	serverBaseEndpoint string = ""
+	serverBaseEndpoint string = "photoSync/api/v1"
 	deployPort         string = ":8080"
 )
 
@@ -52,14 +52,21 @@ func apiMiddleware(next http.Handler) http.Handler {
 			}
 		}
 		if !found {
-			checkApiKey(w, r)
+			if checkApiKey(w, r) {
+				next.ServeHTTP(w, r)
+			} else {
+				r.Body.Close()
+			}
 		}
 	})
 }
 
 func checkApiKey(w http.ResponseWriter, r *http.Request) bool {
 	apiKey := r.URL.Query().Get("apiKey")
-	return apiKey == "1234"
+	if apiKey != authApi {
+		w.Write(ErrorStruct{ErrorType: "Auth", Description: "The auth key provided is not correct"}.toJSON())
+	}
+	return apiKey == authApi
 }
 
 func writeGenericError(w http.ResponseWriter, r *http.Request) {
@@ -70,7 +77,7 @@ func writeGenericError(w http.ResponseWriter, r *http.Request) {
 func tokenGenerator() string {
 	b := make([]byte, 32)
 	rand.Read(b)
-	fmt.Println("New apiKey generated")
+	fmt.Println("New api auth generated")
 	return fmt.Sprintf("%x", b)
 }
 
@@ -116,6 +123,7 @@ func handlerAddPicture(w http.ResponseWriter, r *http.Request) {
 	object.ObjectStruct.Attributes.CreationDate = r.PostForm.Get("creation_date")
 	object.ObjectStruct.Attributes.PicturePosition = r.PostForm.Get("picture_position")
 	object.ObjectStruct.Attributes.UserProperty = r.PostForm.Get("username")
+	object.ObjectStruct.Attributes.LocalPath = r.PostForm.Get("local_path")
 	err := AddPicture(object)
 	if err != nil {
 		writeGenericError(w, r)

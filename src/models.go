@@ -18,6 +18,7 @@ type MediaAttributes struct {
 	UserProperty    string `json:"user"`
 	PicturePosition string `json:"position"`
 	BytesSize       int64  `json:"bytes_size"`
+	LocalPath       string `json:"local_path"`
 }
 
 type Object struct {
