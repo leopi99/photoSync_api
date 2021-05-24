@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/rand"
 	"fmt"
 	"log"
 	"net/http"
@@ -15,6 +16,7 @@ const (
 
 var (
 	authNotNeeded []string = []string{"/login"}
+	authApi       string   = "1234"
 )
 
 //	Initialize the listeners on the endoponts
@@ -27,6 +29,7 @@ func InitializeApiEndPoints() {
 	s.HandleFunc("/getVideos", handlerGetVideos).Methods("GET")
 	s.HandleFunc("/getAll", handlerGetObjects).Methods("GET")
 	s.HandleFunc("/addPicture", handlerAddPicture).Methods("POST")
+	s.HandleFunc("/login", handlerLogin).Methods("POST")
 
 	log.Fatal(http.ListenAndServe(deployPort, r))
 }
@@ -61,6 +64,14 @@ func checkApiKey(w http.ResponseWriter, r *http.Request) bool {
 
 func writeGenericError(w http.ResponseWriter, r *http.Request) {
 	w.Write(ErrorStruct{ErrorType: "Internal Server Error", Description: "An error occured"}.toJSON())
+}
+
+//Generator for the API_KEY
+func tokenGenerator() string {
+	b := make([]byte, 32)
+	rand.Read(b)
+	fmt.Println("New apiKey generated")
+	return fmt.Sprintf("%x", b)
 }
 
 ///
@@ -110,4 +121,13 @@ func handlerAddPicture(w http.ResponseWriter, r *http.Request) {
 		writeGenericError(w, r)
 		return
 	}
+}
+
+func handlerLogin(w http.ResponseWriter, r *http.Request) {
+	username := r.PostForm.Get("username")
+	password := r.PostForm.Get("password")
+	if password == "password" && username == "leopi99" {
+		authApi = tokenGenerator()
+	}
+	w.Write([]byte("{\"key\": \"" + authApi + "\"}"))
 }

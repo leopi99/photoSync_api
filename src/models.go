@@ -38,13 +38,14 @@ type Objects []Object
 ///
 
 // Returns the bytes of the json
-func (object Object) toJSON() []byte {
-	json, error := json.Marshal(object)
-	if error != nil {
-		panic(error)
-	}
-	return json
-}
+// TODO: uncomment when needed
+// func (object Object) toJSON() []byte {
+// 	json, error := json.Marshal(object)
+// 	if error != nil {
+// 		panic(error)
+// 	}
+// 	return json
+// }
 
 // Returns the bytes of the json
 func (err ErrorStruct) toJSON() []byte {
