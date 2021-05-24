@@ -62,6 +62,8 @@ func AddPicture(picture RawObject) error {
 	if err != nil {
 		return err
 	}
+	picture.ObjectStruct.Attributes.BytesSize = size
+	picture.ObjectStruct.Attributes.Url = imagePath
 	fmt.Println("imagePath: " + imagePath)
 	fmt.Printf("imageSize: %d", size)
 	//TODO: implement the image save into the db

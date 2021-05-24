@@ -26,6 +26,7 @@ func InitializeApiEndPoints() {
 	s.HandleFunc("/getPictures", handlerGetPictures).Methods("GET")
 	s.HandleFunc("/getVideos", handlerGetVideos).Methods("GET")
 	s.HandleFunc("/getAll", handlerGetObjects).Methods("GET")
+	s.HandleFunc("/addPicture", handlerAddPicture).Methods("POST")
 
 	log.Fatal(http.ListenAndServe(deployPort, r))
 }
@@ -58,6 +59,10 @@ func checkApiKey(w http.ResponseWriter, r *http.Request) bool {
 	return apiKey == "1234"
 }
 
+func writeGenericError(w http.ResponseWriter, r *http.Request) {
+	w.Write(ErrorStruct{ErrorType: "Internal Server Error", Description: "An error occured"}.toJSON())
+}
+
 ///
 ///	Endpoints handlers
 ///
@@ -65,7 +70,8 @@ func checkApiKey(w http.ResponseWriter, r *http.Request) bool {
 func handlerGetPictures(w http.ResponseWriter, r *http.Request) {
 	objects, err := GetUserObjectsFiltered("", "picture")
 	if err != nil {
-		w.Write(ErrorStruct{ErrorType: "Internal Server Error", Description: "An error occured"}.toJSON())
+		writeGenericError(w, r)
+		return
 	} else {
 		w.Write(objects.toJSON())
 	}
@@ -74,7 +80,8 @@ func handlerGetPictures(w http.ResponseWriter, r *http.Request) {
 func handlerGetVideos(w http.ResponseWriter, r *http.Request) {
 	objects, err := GetUserObjectsFiltered("", "video")
 	if err != nil {
-		w.Write(ErrorStruct{ErrorType: "Internal Server Error", Description: "An error occured"}.toJSON())
+		writeGenericError(w, r)
+		return
 	} else {
 		w.Write(objects.toJSON())
 	}
@@ -83,8 +90,24 @@ func handlerGetVideos(w http.ResponseWriter, r *http.Request) {
 func handlerGetObjects(w http.ResponseWriter, r *http.Request) {
 	objects, err := GetUserObjects("")
 	if err != nil {
-		w.Write(ErrorStruct{ErrorType: "Internal Server Error", Description: "An error occured"}.toJSON())
+		writeGenericError(w, r)
+		return
 	} else {
 		w.Write(objects.toJSON())
+	}
+}
+
+func handlerAddPicture(w http.ResponseWriter, r *http.Request) {
+	// TODO: Add the Object generation from the POST request
+	var object RawObject
+	object.ObjectStruct.Type = r.PostForm.Get("type")
+	object.ObjectStruct.Attributes.SyncDate = r.PostForm.Get("sync_date")
+	object.ObjectStruct.Attributes.CreationDate = r.PostForm.Get("creation_date")
+	object.ObjectStruct.Attributes.PicturePosition = r.PostForm.Get("picture_position")
+	object.ObjectStruct.Attributes.UserProperty = r.PostForm.Get("username")
+	err := AddPicture(object)
+	if err != nil {
+		writeGenericError(w, r)
+		return
 	}
 }

@@ -17,7 +17,7 @@ type MediaAttributes struct {
 	CreationDate    string `json:"creation_date"`
 	UserProperty    string `json:"user"`
 	PicturePosition string `json:"position"`
-	BytesSize       int    `json:"bytes_size"`
+	BytesSize       int64  `json:"bytes_size"`
 }
 
 type Object struct {
