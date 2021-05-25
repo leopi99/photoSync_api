@@ -35,7 +35,7 @@ func GetUserObjects(username string) (Objects, error) {
 	var objects Objects
 	for rows.Next() {
 		var currentPicture Object
-		rows.Scan(&currentPicture.databaseID, &currentPicture.Attributes.CreationDate, &currentPicture.Attributes.PicturePosition, &currentPicture.Attributes.SyncDate, &currentPicture.Attributes.Url, &currentPicture.Attributes.UserProperty)
+		rows.Scan(&currentPicture.Attributes.databaseID, &currentPicture.Attributes.CreationDate, &currentPicture.Attributes.PicturePosition, &currentPicture.Attributes.SyncDate, &currentPicture.Attributes.Url, &currentPicture.Attributes.UserProperty)
 		objects = append(objects, currentPicture)
 	}
 	return objects, nil
@@ -50,7 +50,7 @@ func GetUserObjectsFiltered(username string, objType string) (Objects, error) {
 	var objects Objects
 	for rows.Next() {
 		var currentPicture Object
-		rows.Scan(&currentPicture.databaseID, &currentPicture.Attributes.CreationDate, &currentPicture.Attributes.PicturePosition, &currentPicture.Attributes.SyncDate, &currentPicture.Attributes.Url, &currentPicture.Attributes.UserProperty)
+		rows.Scan(&currentPicture.Attributes.databaseID, &currentPicture.Attributes.CreationDate, &currentPicture.Attributes.PicturePosition, &currentPicture.Attributes.SyncDate, &currentPicture.Attributes.Url, &currentPicture.Attributes.UserProperty)
 		objects = append(objects, currentPicture)
 	}
 	return objects, nil

@@ -19,12 +19,12 @@ type MediaAttributes struct {
 	PicturePosition string `json:"position"`
 	BytesSize       int64  `json:"bytes_size"`
 	LocalPath       string `json:"local_path"`
+	databaseID      int    `json:"database_id"`
 }
 
 type Object struct {
 	Attributes MediaAttributes `json:"attributes"`
 	Type       string          `json:"type"`
-	databaseID int
 }
 
 type RawObject struct {
