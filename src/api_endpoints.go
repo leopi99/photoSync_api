@@ -117,14 +117,15 @@ func handlerGetObjects(w http.ResponseWriter, r *http.Request) {
 
 func handlerAddPicture(w http.ResponseWriter, r *http.Request) {
 	// TODO: Add the Object generation from the POST request
-	var object RawObject
-	object.ObjectStruct.Type = r.PostForm.Get("type")
-	object.ObjectStruct.Attributes.SyncDate = r.PostForm.Get("sync_date")
-	object.ObjectStruct.Attributes.CreationDate = r.PostForm.Get("creation_date")
-	object.ObjectStruct.Attributes.PicturePosition = r.PostForm.Get("picture_position")
-	object.ObjectStruct.Attributes.UserProperty = r.PostForm.Get("username")
-	object.ObjectStruct.Attributes.LocalPath = r.PostForm.Get("local_path")
-	err := AddPicture(object)
+	var rawObject RawObject
+	var err error
+	data := []byte(r.PostForm.Get("data"))
+	rawObject, err = ObjectfromJSON(data)
+	if err != nil {
+		writeGenericError(w, r)
+		return
+	}
+	err = AddPicture(rawObject)
 	if err != nil {
 		writeGenericError(w, r)
 		return
