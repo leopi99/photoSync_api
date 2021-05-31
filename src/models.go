@@ -19,7 +19,7 @@ type MediaAttributes struct {
 	PicturePosition string `json:"position"`
 	BytesSize       int64  `json:"bytes_size"`
 	LocalPath       string `json:"local_path"`
-	databaseID      int    `json:"database_id"`
+	DatabaseID      int    `json:"database_id"`
 }
 
 type Object struct {
@@ -34,7 +34,6 @@ type RawObject struct {
 
 type User struct {
 	Username string `json:"username"`
-	Email    string `json:"email"`
 	Password string `json:"password"`
 	ApiKey   string `json:"apiKey"`
 }
