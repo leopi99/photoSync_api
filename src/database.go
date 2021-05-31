@@ -7,12 +7,15 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-const (
-	databaseUsername string = ""
-	databasePassword string = ""
-	databaseAddress  string = ""
-	databaseName     string = ""
-)
+///
+///	The constants:
+///	databaseUsername	string = ""
+/// databasePassword	string = ""
+/// databaseAddress		string = ""
+/// databaseName		string = ""
+///
+///	Can be created inside another file (like sensible_data.go) as consts
+///
 
 var (
 	database *sql.DB
