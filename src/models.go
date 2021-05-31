@@ -32,6 +32,13 @@ type RawObject struct {
 	FileBytes    []byte
 }
 
+type User struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	ApiKey   string `json:"apiKey"`
+}
+
 type Objects []Object
 
 ///
@@ -59,6 +66,14 @@ func (err ErrorStruct) toJSON() []byte {
 
 func (objects Objects) toJSON() []byte {
 	json, error := json.Marshal(objects)
+	if error != nil {
+		panic(error)
+	}
+	return json
+}
+
+func (user User) toJSON() []byte {
+	json, error := json.Marshal(user)
 	if error != nil {
 		panic(error)
 	}

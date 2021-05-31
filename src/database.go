@@ -31,7 +31,7 @@ func InitializeDatabaseConnection() error {
 
 //	Returns all the pictures and the videos saved for a user
 func GetUserObjects(username string) (Objects, error) {
-	rows, err := database.Query("SELECT * FROM picture WHERE username = " + username + ";")
+	rows, err := database.Query("SELECT * FROM object WHERE username = " + username + ";")
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func GetUserObjects(username string) (Objects, error) {
 
 //	Returns all the pictures or videos of a user
 func GetUserObjectsFiltered(username string, objType string) (Objects, error) {
-	rows, err := database.Query("SELECT * FROM picture WHERE username = " + username + "AND type = \"" + objType + "\"" + ";")
+	rows, err := database.Query("SELECT * FROM object WHERE username = " + username + "AND type = \"" + objType + "\"" + ";")
 	if err != nil {
 		return nil, err
 	}
@@ -71,4 +71,16 @@ func AddPicture(picture RawObject) error {
 	fmt.Printf("imageSize: %d", size)
 	//TODO: implement the image save into the db
 	return nil
+}
+
+func databaseLogin(user User) (User, error) {
+	rows, err := database.Query("SELECT * FROM user WHERE username = " + user.Username + "AND password = \"" + user.Password + "\"" + ";")
+	var userFound User
+	if err != nil {
+		return userFound, err
+	}
+	for rows.Next() {
+		rows.Scan(&userFound.Username, &userFound.Email)
+	}
+	return userFound, nil
 }

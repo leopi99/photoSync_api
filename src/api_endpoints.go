@@ -135,8 +135,12 @@ func handlerAddPicture(w http.ResponseWriter, r *http.Request) {
 func handlerLogin(w http.ResponseWriter, r *http.Request) {
 	username := r.PostForm.Get("username")
 	password := r.PostForm.Get("password")
-	if password == "password" && username == "leopi99" {
-		authApi = tokenGenerator()
+	user, err := databaseLogin(User{Password: password, Username: username})
+	if err != nil {
+		writeGenericError(w, r)
+		return
 	}
-	w.Write([]byte("{\"key\": \"" + authApi + "\"}"))
+	authApi = tokenGenerator()
+	user.ApiKey = authApi
+	w.Write(user.toJSON())
 }
