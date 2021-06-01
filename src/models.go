@@ -35,7 +35,7 @@ type RawObject struct {
 type User struct {
 	UserID   int    `json:"userID"`
 	Username string `json:"username"`
-	Password string `json:"password"`
+	password string
 	ApiKey   string `json:"apiKey"`
 }
 

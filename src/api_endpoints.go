@@ -190,7 +190,7 @@ func handlerLogin(w http.ResponseWriter, r *http.Request) {
 		writeGenericError(w, r, "parameter_missing", "One or more parameters needed are missing", 400)
 		return
 	}
-	user, err := databaseLogin(User{Password: password, Username: username})
+	user, err := databaseLogin(User{password: password, Username: username})
 	if err != nil {
 		writeGenericError(w, r, "User not found", "user_not_found", 999)
 		return

@@ -89,7 +89,7 @@ func databaseLogin(user User) (User, error) {
 	}
 	userFound = User{}
 	//Actually gets the user
-	rows, err = database.Query("SELECT username, userID FROM user WHERE username = \"" + user.Username + "\" AND password = \"" + user.Password + "\"" + ";")
+	rows, err = database.Query("SELECT username, userID FROM user WHERE username = \"" + user.Username + "\" AND password = \"" + user.password + "\"" + ";")
 
 	if err != nil {
 		return userFound, err
