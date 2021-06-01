@@ -45,8 +45,8 @@ func GetUserObjects(userID string) (Objects, error) {
 }
 
 //	Returns all the pictures or videos of a user
-func GetUserObjectsFiltered(username string, objType string) (Objects, error) {
-	rows, err := database.Query("SELECT * FROM object WHERE username = " + username + "AND type = \"" + objType + "\"" + ";")
+func GetUserObjectsFiltered(userID string, objType string) (Objects, error) {
+	rows, err := database.Query("SELECT * FROM object WHERE userID = " + userID + " AND type = \"" + objType + "\";")
 	if err != nil {
 		return nil, err
 	}

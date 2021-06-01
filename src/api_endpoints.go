@@ -95,28 +95,54 @@ func tokenGenerator() string {
 ///
 
 func handlerGetPictures(w http.ResponseWriter, r *http.Request) {
-	objects, err := GetUserObjectsFiltered("", "picture")
+	r.ParseForm()
+	userID := r.Form.Get("userID")
+	if userID == "" {
+		writeGenericError(w, r, "user_not_selected", "User identification not set")
+		return
+	}
+	objects, err := GetUserObjectsFiltered(userID, "picture")
 	if err != nil {
 		writeGenericError(w, r, "", "")
+		fmt.Print(err)
 		return
 	} else {
-		w.Write(objects.toJSON())
+		if len(objects) == 0 {
+			w.Write([]byte("{}"))
+		} else {
+			w.Write(objects.toJSON())
+		}
 	}
 }
 
 func handlerGetVideos(w http.ResponseWriter, r *http.Request) {
-	objects, err := GetUserObjectsFiltered("", "video")
+	r.ParseForm()
+	userID := r.Form.Get("userID")
+	if userID == "" {
+		writeGenericError(w, r, "user_not_selected", "User identification not set")
+		return
+	}
+	objects, err := GetUserObjectsFiltered(userID, "video")
 	if err != nil {
 		writeGenericError(w, r, "", "")
+		fmt.Print(err)
 		return
 	} else {
-		w.Write(objects.toJSON())
+		if len(objects) == 0 {
+			w.Write([]byte("{}"))
+		} else {
+			w.Write(objects.toJSON())
+		}
 	}
 }
 
 func handlerGetObjects(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	userID := r.Form.Get("userID")
+	if userID == "" {
+		writeGenericError(w, r, "user_not_selected", "User identification not set")
+		return
+	}
 	objects, err := GetUserObjects(userID)
 	if err != nil {
 		writeGenericError(w, r, "", "")
