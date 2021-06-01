@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	serverBaseEndpoint string = "photoSync/api/v1"
-	deployPort         string = ":8080"
+	serverBaseEndpoint string = "/photoSync/api/v1"
+	deployPort         string = ":8010"
 )
 
 var (
@@ -25,12 +25,12 @@ func InitializeApiEndPoints() {
 	r := mux.NewRouter()
 	s := r.PathPrefix(serverBaseEndpoint).Subrouter()
 	s.Use(apiMiddleware)
-	s.HandleFunc("/getPictures", handlerGetPictures).Methods("GET")
-	s.HandleFunc("/getVideos", handlerGetVideos).Methods("GET")
-	s.HandleFunc("/getAll", handlerGetObjects).Methods("GET")
-	s.HandleFunc("/addPicture", handlerAddPicture).Methods("POST")
-	s.HandleFunc("/login", handlerLogin).Methods("POST")
-
+	s.HandleFunc("/getPictures", handlerGetPictures)
+	s.HandleFunc("/getVideos", handlerGetVideos)
+	s.HandleFunc("/getAll", handlerGetObjects)
+	s.HandleFunc("/addPicture", handlerAddPicture)
+	s.HandleFunc("/login", handlerLogin)
+	fmt.Println("Running from localhost" + deployPort + serverBaseEndpoint)
 	log.Fatal(http.ListenAndServe(deployPort, r))
 }
 
@@ -42,7 +42,7 @@ func InitializeApiEndPoints() {
 func apiMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path[len(serverBaseEndpoint):]
-		fmt.Printf("Handling %s for %s", path, r.RemoteAddr)
+		fmt.Printf("Handling %s for %s\n", path, r.RemoteAddr)
 		w.Header().Add("Content-Type", "application/json")
 		var found bool
 		for _, checkedPath := range authNotNeeded {
@@ -57,6 +57,8 @@ func apiMiddleware(next http.Handler) http.Handler {
 			} else {
 				r.Body.Close()
 			}
+		} else {
+			next.ServeHTTP(w, r)
 		}
 	})
 }
@@ -69,8 +71,15 @@ func checkApiKey(w http.ResponseWriter, r *http.Request) bool {
 	return apiKey == authApi
 }
 
-func writeGenericError(w http.ResponseWriter, r *http.Request) {
-	w.Write(ErrorStruct{ErrorType: "Internal Server Error", Description: "An error occured"}.toJSON())
+func writeGenericError(w http.ResponseWriter, r *http.Request, description string, errorType string) {
+	if description == "" {
+		description = "An error occured"
+	}
+	if errorType == "" {
+		errorType = "Internal Server Error"
+	}
+	w.WriteHeader(500)
+	w.Write(ErrorStruct{ErrorType: errorType, Description: description}.toJSON())
 }
 
 //Generator for the API_KEY
@@ -88,7 +97,7 @@ func tokenGenerator() string {
 func handlerGetPictures(w http.ResponseWriter, r *http.Request) {
 	objects, err := GetUserObjectsFiltered("", "picture")
 	if err != nil {
-		writeGenericError(w, r)
+		writeGenericError(w, r, "", "")
 		return
 	} else {
 		w.Write(objects.toJSON())
@@ -98,7 +107,7 @@ func handlerGetPictures(w http.ResponseWriter, r *http.Request) {
 func handlerGetVideos(w http.ResponseWriter, r *http.Request) {
 	objects, err := GetUserObjectsFiltered("", "video")
 	if err != nil {
-		writeGenericError(w, r)
+		writeGenericError(w, r, "", "")
 		return
 	} else {
 		w.Write(objects.toJSON())
@@ -106,12 +115,19 @@ func handlerGetVideos(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlerGetObjects(w http.ResponseWriter, r *http.Request) {
-	objects, err := GetUserObjects("")
+	r.ParseForm()
+	userID := r.Form.Get("userID")
+	objects, err := GetUserObjects(userID)
 	if err != nil {
-		writeGenericError(w, r)
+		writeGenericError(w, r, "", "")
+		fmt.Print(err)
 		return
 	} else {
-		w.Write(objects.toJSON())
+		if len(objects) == 0 {
+			w.Write([]byte("{}"))
+		} else {
+			w.Write(objects.toJSON())
+		}
 	}
 }
 
@@ -122,25 +138,34 @@ func handlerAddPicture(w http.ResponseWriter, r *http.Request) {
 	data := []byte(r.PostForm.Get("data"))
 	rawObject, err = ObjectfromJSON(data)
 	if err != nil {
-		writeGenericError(w, r)
+		writeGenericError(w, r, "", "")
 		return
 	}
 	err = AddPicture(rawObject)
 	if err != nil {
-		writeGenericError(w, r)
+		writeGenericError(w, r, "", "")
 		return
 	}
 }
 
 func handlerLogin(w http.ResponseWriter, r *http.Request) {
-	username := r.PostForm.Get("username")
-	password := r.PostForm.Get("password")
+	r.ParseForm()
+	username := r.Form.Get("username")
+	password := r.Form.Get("password")
+	if username == "" || password == "" {
+		writeGenericError(w, r, "", "")
+		return
+	}
 	user, err := databaseLogin(User{Password: password, Username: username})
 	if err != nil {
-		writeGenericError(w, r)
+		writeGenericError(w, r, "db_error", "Database error")
 		return
 	}
 	authApi = tokenGenerator()
+	if user.Username == "" {
+		writeGenericError(w, r, "User not found", "user_not_found_error")
+		return
+	}
 	user.ApiKey = authApi
 	w.Write(user.toJSON())
 }
