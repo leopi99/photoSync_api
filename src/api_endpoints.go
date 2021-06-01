@@ -36,7 +36,7 @@ func InitializeApiEndPoints() {
 }
 
 ///
-///	Not categorized functions
+///	Functions without category
 ///
 
 //	Middleware for the apis
@@ -66,6 +66,10 @@ func apiMiddleware(next http.Handler) http.Handler {
 
 func checkApiKey(w http.ResponseWriter, r *http.Request) bool {
 	apiKey := r.URL.Query().Get("apiKey")
+	if apiKey == "" {
+		r.ParseForm()
+		apiKey = r.Form.Get("apiKey")
+	}
 	if apiKey != authApi {
 		w.Write(ErrorStruct{ErrorType: "Auth", Description: "The auth key provided is not correct"}.toJSON())
 	}
