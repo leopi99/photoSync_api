@@ -30,6 +30,7 @@ func InitializeApiEndPoints() {
 	s.HandleFunc("/getAll", handlerGetObjects)
 	s.HandleFunc("/addPicture", handlerAddPicture)
 	s.HandleFunc("/login", handlerLogin)
+	s.HandleFunc("/register", handlerRegistration)
 	fmt.Println("Running from localhost" + deployPort + serverBaseEndpoint)
 	log.Fatal(http.ListenAndServe(deployPort, r))
 }
@@ -179,7 +180,7 @@ func handlerLogin(w http.ResponseWriter, r *http.Request) {
 	username := r.Form.Get("username")
 	password := r.Form.Get("password")
 	if username == "" || password == "" {
-		writeGenericError(w, r, "", "")
+		writeGenericError(w, r, "parameter_missing", "One or more parameters needed are missing")
 		return
 	}
 	user, err := databaseLogin(User{Password: password, Username: username})
@@ -194,4 +195,14 @@ func handlerLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	user.ApiKey = authApi
 	w.Write(user.toJSON())
+}
+
+func handlerRegistration(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	username := r.Form.Get("username")
+	password := r.Form.Get("password")
+	if username == "" || password == "" {
+		writeGenericError(w, r, "parameter_missing", "One or more parameters needed are missing")
+		return
+	}
 }
