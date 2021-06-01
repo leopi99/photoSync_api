@@ -85,7 +85,6 @@ func databaseLogin(user User) (User, error) {
 		rows.Scan(&userFound.Username)
 	}
 	if userFound.Username == "" {
-		fmt.Println("Username is \"\"")
 		return userFound, errors.New("no_user_found")
 	}
 	userFound = User{}
