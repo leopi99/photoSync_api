@@ -195,11 +195,11 @@ func handlerLogin(w http.ResponseWriter, r *http.Request) {
 		writeGenericError(w, r, "db_error", "Database error", 999)
 		return
 	}
-	authApi = tokenGenerator()
 	if user.Username == "" {
 		writeGenericError(w, r, "User not found", "user_not_found_error", 400)
 		return
 	}
+	authApi = tokenGenerator()
 	user.ApiKey = authApi
 	w.Write(user.toJSON())
 }
