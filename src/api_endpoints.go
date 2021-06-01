@@ -192,11 +192,11 @@ func handlerLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	user, err := databaseLogin(User{Password: password, Username: username})
 	if err != nil {
-		writeGenericError(w, r, "db_error", "Database error", 999)
+		writeGenericError(w, r, "User not found", "user_not_found", 999)
 		return
 	}
 	if user.Username == "" {
-		writeGenericError(w, r, "User not found", "user_not_found_error", 400)
+		writeGenericError(w, r, "Wrong credentials", "wrong_credentials", 400)
 		return
 	}
 	authApi = tokenGenerator()

@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -74,8 +75,23 @@ func AddPicture(picture RawObject) error {
 }
 
 func databaseLogin(user User) (User, error) {
-	rows, err := database.Query("SELECT username, userID FROM user WHERE username = \"" + user.Username + "\" AND password = \"" + user.Password + "\"" + ";")
 	var userFound User
+	//Checks if the user exists
+	rows, err := database.Query("SELECT username FROM user WHERE username = \"" + user.Username + "\";")
+	if err != nil {
+		return userFound, err
+	}
+	for rows.Next() {
+		rows.Scan(&userFound.Username)
+	}
+	if userFound.Username == "" {
+		fmt.Println("Username is \"\"")
+		return userFound, errors.New("no_user_found")
+	}
+	userFound = User{}
+	//Actually gets the user
+	rows, err = database.Query("SELECT username, userID FROM user WHERE username = \"" + user.Username + "\" AND password = \"" + user.Password + "\"" + ";")
+
 	if err != nil {
 		return userFound, err
 	}
