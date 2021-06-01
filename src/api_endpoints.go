@@ -76,14 +76,17 @@ func checkApiKey(w http.ResponseWriter, r *http.Request) bool {
 	return apiKey == authApi
 }
 
-func writeGenericError(w http.ResponseWriter, r *http.Request, description string, errorType string) {
+func writeGenericError(w http.ResponseWriter, r *http.Request, description string, errorType string, statusCode int) {
 	if description == "" {
 		description = "An error occured"
 	}
 	if errorType == "" {
 		errorType = "Internal Server Error"
 	}
-	w.WriteHeader(500)
+	if statusCode == 999 {
+		statusCode = 500
+	}
+	w.WriteHeader(statusCode)
 	w.Write(ErrorStruct{ErrorType: errorType, Description: description}.toJSON())
 }
 
@@ -103,12 +106,12 @@ func handlerGetPictures(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	userID := r.Form.Get("userID")
 	if userID == "" {
-		writeGenericError(w, r, "user_not_selected", "User identification not set")
+		writeGenericError(w, r, "user_not_selected", "User identification not set", 400)
 		return
 	}
 	objects, err := GetUserObjectsFiltered(userID, "picture")
 	if err != nil {
-		writeGenericError(w, r, "", "")
+		writeGenericError(w, r, "", "", 999)
 		fmt.Print(err)
 		return
 	} else {
@@ -124,12 +127,12 @@ func handlerGetVideos(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	userID := r.Form.Get("userID")
 	if userID == "" {
-		writeGenericError(w, r, "user_not_selected", "User identification not set")
+		writeGenericError(w, r, "user_not_selected", "User identification not set", 400)
 		return
 	}
 	objects, err := GetUserObjectsFiltered(userID, "video")
 	if err != nil {
-		writeGenericError(w, r, "", "")
+		writeGenericError(w, r, "", "", 999)
 		fmt.Print(err)
 		return
 	} else {
@@ -145,12 +148,12 @@ func handlerGetObjects(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	userID := r.Form.Get("userID")
 	if userID == "" {
-		writeGenericError(w, r, "user_not_selected", "User identification not set")
+		writeGenericError(w, r, "user_not_selected", "User identification not set", 400)
 		return
 	}
 	objects, err := GetUserObjects(userID)
 	if err != nil {
-		writeGenericError(w, r, "", "")
+		writeGenericError(w, r, "", "", 999)
 		fmt.Print(err)
 		return
 	} else {
@@ -169,12 +172,12 @@ func handlerAddPicture(w http.ResponseWriter, r *http.Request) {
 	data := []byte(r.PostForm.Get("data"))
 	rawObject, err = ObjectfromJSON(data)
 	if err != nil {
-		writeGenericError(w, r, "", "")
+		writeGenericError(w, r, "", "", 999)
 		return
 	}
 	err = AddPicture(rawObject)
 	if err != nil {
-		writeGenericError(w, r, "", "")
+		writeGenericError(w, r, "", "", 999)
 		return
 	}
 }
@@ -184,17 +187,17 @@ func handlerLogin(w http.ResponseWriter, r *http.Request) {
 	username := r.Form.Get("username")
 	password := r.Form.Get("password")
 	if username == "" || password == "" {
-		writeGenericError(w, r, "parameter_missing", "One or more parameters needed are missing")
+		writeGenericError(w, r, "parameter_missing", "One or more parameters needed are missing", 400)
 		return
 	}
 	user, err := databaseLogin(User{Password: password, Username: username})
 	if err != nil {
-		writeGenericError(w, r, "db_error", "Database error")
+		writeGenericError(w, r, "db_error", "Database error", 999)
 		return
 	}
 	authApi = tokenGenerator()
 	if user.Username == "" {
-		writeGenericError(w, r, "User not found", "user_not_found_error")
+		writeGenericError(w, r, "User not found", "user_not_found_error", 400)
 		return
 	}
 	user.ApiKey = authApi
@@ -206,7 +209,7 @@ func handlerRegistration(w http.ResponseWriter, r *http.Request) {
 	username := r.Form.Get("username")
 	password := r.Form.Get("password")
 	if username == "" || password == "" {
-		writeGenericError(w, r, "parameter_missing", "One or more parameters needed are missing")
+		writeGenericError(w, r, "parameter_missing", "One or more parameters needed are missing", 400)
 		return
 	}
 }
