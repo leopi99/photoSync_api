@@ -15,7 +15,7 @@ const (
 )
 
 var (
-	authNotNeeded []string = []string{"/login"}
+	authNotNeeded []string = []string{"/login", "/register"}
 	authApi       string   = "1234"
 )
 
@@ -192,7 +192,11 @@ func handlerLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	user, err := databaseLogin(User{password: password, Username: username})
 	if err != nil {
-		writeGenericError(w, r, "User not found", "user_not_found", 999)
+		if err.Error() == "user_not_found" {
+			writeGenericError(w, r, "User not found", "user_not_found", 999)
+		} else {
+			writeGenericError(w, r, "Wrong credentials", "wrong_credentials", 400)
+		}
 		return
 	}
 	if user.Username == "" {
@@ -212,4 +216,17 @@ func handlerRegistration(w http.ResponseWriter, r *http.Request) {
 		writeGenericError(w, r, "parameter_missing", "One or more parameters needed are missing", 400)
 		return
 	}
+
+	var user User
+	user.Username = username
+	user.password = password
+	err := databaseRegister(user)
+
+	if err != nil {
+		fmt.Println(err)
+		writeGenericError(w, r, "Registration error", "registration_error", 500)
+		return
+	}
+
+	w.Write([]byte("{\"result\": \"ok\"}"))
 }

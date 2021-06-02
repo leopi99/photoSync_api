@@ -76,26 +76,33 @@ func AddPicture(picture RawObject) error {
 
 func databaseLogin(user User) (User, error) {
 	var userFound User
-	//Checks if the user exists
-	rows, err := database.Query("SELECT username FROM user WHERE username = \"" + user.Username + "\";")
+	rows, err := database.Query("SELECT username, password, userID FROM user WHERE username = \"" + user.Username + "\";")
 	if err != nil {
 		return userFound, err
 	}
 	for rows.Next() {
-		rows.Scan(&userFound.Username)
+		rows.Scan(&userFound.Username, &userFound.password, &userFound.UserID)
 	}
 	if userFound.Username == "" {
-		return userFound, errors.New("no_user_found")
+		return userFound, errors.New("user_not_found")
 	}
 	userFound = User{}
-	//Actually gets the user
-	rows, err = database.Query("SELECT username, userID FROM user WHERE username = \"" + user.Username + "\" AND password = \"" + user.password + "\"" + ";")
-
+	rows, err = database.Query("SELECT username, password, userID FROM user WHERE username = \"" + user.Username + "\" AND password = PASSWORD(\"" + user.password + "\");")
 	if err != nil {
 		return userFound, err
 	}
+
 	for rows.Next() {
-		rows.Scan(&userFound.Username, &userFound.UserID)
+		rows.Scan(&userFound.Username, &userFound.password, &userFound.UserID)
+	}
+
+	if userFound.password == "" {
+		return User{}, errors.New("wrong_credentials")
 	}
 	return userFound, nil
+}
+
+func databaseRegister(user User) error {
+	_, err := database.Query("INSERT INTO user(username, password) VALUES(\"" + user.Username + "\", PASSWORD(\"" + user.password + "\"));")
+	return err
 }
