@@ -16,7 +16,7 @@ const (
 
 var (
 	authNotNeeded []string = []string{"/login", "/register"}
-	authApi       string   = "1234"
+	authApi       string
 )
 
 //	Initialize the listeners on the endoponts

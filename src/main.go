@@ -14,5 +14,6 @@ func main() {
 		panic(err)
 	}
 	fmt.Printf("Photo sync initialized v%s\n", apiVersion)
+	authApi = tokenGenerator()
 	InitializeApiEndPoints()
 }
