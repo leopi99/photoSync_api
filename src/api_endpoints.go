@@ -32,6 +32,7 @@ func InitializeApiEndPoints() {
 	s.HandleFunc("/addPicture", handlerAddPicture)
 	s.HandleFunc("/login", handlerLogin)
 	s.HandleFunc("/register", handlerRegistration)
+	s.HandleFunc("/logout", handlerLogout)
 	fmt.Println("Running from localhost" + deployPort + serverBaseEndpoint)
 	log.Fatal(http.ListenAndServe(deployPort, r))
 }
@@ -47,6 +48,7 @@ func apiMiddleware(next http.Handler) http.Handler {
 		fmt.Printf("Handling %s for %s\n", path, r.RemoteAddr)
 		w.Header().Add("Content-Type", "application/json")
 		var found bool
+		//Checks if the request needs the authentication
 		for _, checkedPath := range authNotNeeded {
 			if checkedPath == path {
 				found = true
@@ -73,19 +75,21 @@ func checkApiKey(w http.ResponseWriter, r *http.Request) bool {
 	}
 	contained := containsMap(apiKeys, apiKey)
 	if !contained {
-		w.Write(ErrorStruct{ErrorType: "Auth", Description: "The auth key provided is not correct"}.toJSON())
+		w.Write(ErrorStruct{ErrorType: "Auth", Description: "This operation needs authentication"}.toJSON())
 
 	}
 	return contained
 }
 
 func writeGenericError(w http.ResponseWriter, r *http.Request, description string, errorType string, statusCode int) {
+	//Sets the errors if none is provided
 	if description == "" {
 		description = "An error occured"
 	}
 	if errorType == "" {
 		errorType = "Internal Server Error"
 	}
+
 	if statusCode == 999 {
 		statusCode = 500
 	}
@@ -250,4 +254,11 @@ func handlerRegistration(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write([]byte("{\"result\": \"ok\"}"))
+}
+
+func handlerLogout(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	username := r.Form.Get("username")
+	delete(apiKeys, username)
+	w.Write([]byte("{\"result\":\"ok\"}"))
 }
