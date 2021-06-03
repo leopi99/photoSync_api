@@ -16,11 +16,12 @@ const (
 
 var (
 	authNotNeeded []string = []string{"/login", "/register"}
-	authApi       string
+	apiKeys       map[string]string
 )
 
 //	Initialize the listeners on the endoponts
 func InitializeApiEndPoints() {
+	apiKeys = make(map[string]string)
 	fmt.Println("Initializating api endpoints")
 	r := mux.NewRouter()
 	s := r.PathPrefix(serverBaseEndpoint).Subrouter()
@@ -70,10 +71,12 @@ func checkApiKey(w http.ResponseWriter, r *http.Request) bool {
 		r.ParseForm()
 		apiKey = r.Form.Get("apiKey")
 	}
-	if apiKey != authApi {
+	contained := containsMap(apiKeys, apiKey)
+	if !contained {
 		w.Write(ErrorStruct{ErrorType: "Auth", Description: "The auth key provided is not correct"}.toJSON())
+
 	}
-	return apiKey == authApi
+	return contained
 }
 
 func writeGenericError(w http.ResponseWriter, r *http.Request, description string, errorType string, statusCode int) {
@@ -88,6 +91,17 @@ func writeGenericError(w http.ResponseWriter, r *http.Request, description strin
 	}
 	w.WriteHeader(statusCode)
 	w.Write(ErrorStruct{ErrorType: errorType, Description: description}.toJSON())
+}
+
+func containsMap(thisMap map[string]string, word string) bool {
+	contained := false
+	for _, value := range thisMap {
+		if value == word {
+			contained = true
+			break
+		}
+	}
+	return contained
 }
 
 //Generator for the API_KEY
@@ -203,8 +217,15 @@ func handlerLogin(w http.ResponseWriter, r *http.Request) {
 		writeGenericError(w, r, "Wrong credentials", "wrong_credentials", 400)
 		return
 	}
-	authApi = tokenGenerator()
-	user.ApiKey = authApi
+	var key string
+	if apiKeys[username] == "" {
+		key = tokenGenerator()
+		apiKeys[username] = key
+	} else {
+		key = apiKeys[username]
+	}
+
+	user.ApiKey = key
 	w.Write(user.toJSON())
 }
 
