@@ -82,20 +82,20 @@ func checkApiKey(w http.ResponseWriter, r *http.Request) bool {
 	return contained
 }
 
-func writeGenericError(w http.ResponseWriter, r *http.Request, description string, errorType string, statusCode int) {
+func writeGenericError(w http.ResponseWriter, r *http.Request, errorStruct ErrorStruct) {
 	//Sets the errors if none is provided
-	if description == "" {
-		description = "An error occured"
+	if errorStruct.Description == "" {
+		errorStruct.Description = "An error occured"
 	}
-	if errorType == "" {
-		errorType = "Internal Server Error"
+	if errorStruct.ErrorType == "" {
+		errorStruct.ErrorType = "Internal Server Error"
 	}
 
-	if statusCode == 999 {
-		statusCode = 500
+	if errorStruct.errorStatusCode == 999 {
+		errorStruct.errorStatusCode = 500
 	}
-	w.WriteHeader(statusCode)
-	w.Write(ErrorStruct{ErrorType: errorType, Description: description}.toJSON())
+	w.WriteHeader(errorStruct.errorStatusCode)
+	w.Write(errorStruct.toJSON())
 }
 
 func containsMap(thisMap map[string]string, word string) bool {
@@ -125,12 +125,12 @@ func handlerGetPictures(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	userID := r.Form.Get("userID")
 	if userID == "" {
-		writeGenericError(w, r, "user_not_selected", "User identification not set", 400)
+		writeGenericError(w, r, ErrorStruct{ErrorType: "user_not_selected", errorStatusCode: 400, Description: "User identification not set"})
 		return
 	}
 	objects, err := GetUserObjectsFiltered(userID, "picture")
 	if err != nil {
-		writeGenericError(w, r, "", "", 999)
+		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
 		fmt.Print(err)
 		return
 	} else {
@@ -146,12 +146,12 @@ func handlerGetVideos(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	userID := r.Form.Get("userID")
 	if userID == "" {
-		writeGenericError(w, r, "user_not_selected", "User identification not set", 400)
+		writeGenericError(w, r, ErrorStruct{ErrorType: "user_not_selected", errorStatusCode: 400, Description: "User identification not set"})
 		return
 	}
 	objects, err := GetUserObjectsFiltered(userID, "video")
 	if err != nil {
-		writeGenericError(w, r, "", "", 999)
+		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
 		fmt.Print(err)
 		return
 	} else {
@@ -167,12 +167,12 @@ func handlerGetObjects(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	userID := r.Form.Get("userID")
 	if userID == "" {
-		writeGenericError(w, r, "user_not_selected", "User identification not set", 400)
+		writeGenericError(w, r, ErrorStruct{ErrorType: "user_not_selected", errorStatusCode: 400, Description: "User identification not set"})
 		return
 	}
 	objects, err := GetUserObjects(userID)
 	if err != nil {
-		writeGenericError(w, r, "", "", 999)
+		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
 		fmt.Print(err)
 		return
 	} else {
@@ -191,12 +191,12 @@ func handlerAddPicture(w http.ResponseWriter, r *http.Request) {
 	data := []byte(r.PostForm.Get("data"))
 	rawObject, err = ObjectfromJSON(data)
 	if err != nil {
-		writeGenericError(w, r, "", "", 999)
+		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
 		return
 	}
 	err = AddPicture(rawObject)
 	if err != nil {
-		writeGenericError(w, r, "", "", 999)
+		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
 		return
 	}
 }
@@ -206,20 +206,20 @@ func handlerLogin(w http.ResponseWriter, r *http.Request) {
 	username := r.Form.Get("username")
 	password := r.Form.Get("password")
 	if username == "" || password == "" {
-		writeGenericError(w, r, "parameter_missing", "One or more parameters needed are missing", 400)
+		writeGenericError(w, r, ErrorStruct{ErrorType: "missing_parameter", errorStatusCode: 400, Description: "One or more parameters needed are missing"})
 		return
 	}
 	user, err := databaseLogin(User{password: password, Username: username})
 	if err != nil {
 		if err.Error() == "user_not_found" {
-			writeGenericError(w, r, "User not found", "user_not_found", 999)
+			writeGenericError(w, r, ErrorStruct{ErrorType: "user_not_found", errorStatusCode: 999, Description: "User not found"})
 		} else {
-			writeGenericError(w, r, "Wrong credentials", "wrong_credentials", 400)
+			writeGenericError(w, r, ErrorStruct{ErrorType: "wrong_credentials", errorStatusCode: 400, Description: "Wrong credentials"})
 		}
 		return
 	}
 	if user.Username == "" {
-		writeGenericError(w, r, "Wrong credentials", "wrong_credentials", 400)
+		writeGenericError(w, r, ErrorStruct{ErrorType: "wrong_credentials", errorStatusCode: 400, Description: "Wrong credentials"})
 		return
 	}
 	var key string
@@ -239,7 +239,7 @@ func handlerRegistration(w http.ResponseWriter, r *http.Request) {
 	username := r.Form.Get("username")
 	password := r.Form.Get("password")
 	if username == "" || password == "" {
-		writeGenericError(w, r, "parameter_missing", "One or more parameters needed are missing", 400)
+		writeGenericError(w, r, ErrorStruct{ErrorType: "missing_parameter", errorStatusCode: 400, Description: "One or more parameters needed are missing"})
 		return
 	}
 
@@ -250,7 +250,7 @@ func handlerRegistration(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		fmt.Println(err)
-		writeGenericError(w, r, "Registration error", "registration_error", 500)
+		writeGenericError(w, r, ErrorStruct{ErrorType: "registration_error", errorStatusCode: 500, Description: "Registration error"})
 		return
 	}
 
@@ -276,7 +276,7 @@ func handlerUpdateDownloadedObjetc(w http.ResponseWriter, r *http.Request) {
 	}
 	err := databaseUpdateDownloadedObject(objectID, value)
 	if err != nil {
-		writeGenericError(w, r, "", "", 999)
+		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
 		return
 	}
 	w.Write([]byte("{\"result\": \"ok\"}"))

@@ -7,8 +7,9 @@ import "encoding/json"
 ///
 
 type ErrorStruct struct {
-	ErrorType   string `json:"error"`
-	Description string `json:"description"`
+	ErrorType       string `json:"error"`
+	Description     string `json:"description"`
+	errorStatusCode int
 }
 
 type MediaAttributes struct {
