@@ -15,11 +15,11 @@ type MediaAttributes struct {
 	Url             string `json:"url"`
 	SyncDate        string `json:"sync_date"`
 	CreationDate    string `json:"creation_date"`
-	UserProperty    string `json:"user"`
 	PicturePosition string `json:"position"`
 	BytesSize       int64  `json:"bytes_size"`
 	LocalPath       string `json:"local_path"`
 	DatabaseID      int    `json:"database_id"`
+	Downloaded      bool   `json:"downloaded"`
 }
 
 type Object struct {

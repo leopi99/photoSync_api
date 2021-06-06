@@ -32,14 +32,14 @@ func InitializeDatabaseConnection() error {
 
 //	Returns all the pictures and the videos saved for a user
 func GetUserObjects(userID string) (Objects, error) {
-	rows, err := database.Query("SELECT * FROM object WHERE userID = " + userID + ";")
+	rows, err := database.Query("SELECT objectID, url, local_path, creation_date, sync_date, picture_position, type, byte_size, downloaded FROM object WHERE userID = " + userID + ";")
 	if err != nil {
 		return nil, err
 	}
 	var objects Objects
 	for rows.Next() {
 		var currentPicture Object
-		rows.Scan(&currentPicture.Attributes.DatabaseID, &currentPicture.Attributes.CreationDate, &currentPicture.Attributes.PicturePosition, &currentPicture.Attributes.SyncDate, &currentPicture.Attributes.Url, &currentPicture.Attributes.UserProperty)
+		rows.Scan(&currentPicture.Attributes.DatabaseID, &currentPicture.Attributes.Url, &currentPicture.Attributes.LocalPath, &currentPicture.Attributes.CreationDate, &currentPicture.Attributes.SyncDate, &currentPicture.Attributes.PicturePosition, &currentPicture.Type, &currentPicture.Attributes.BytesSize, &currentPicture.Attributes.Downloaded)
 		objects = append(objects, currentPicture)
 	}
 	return objects, nil
@@ -47,14 +47,14 @@ func GetUserObjects(userID string) (Objects, error) {
 
 //	Returns all the pictures or videos of a user
 func GetUserObjectsFiltered(userID string, objType string) (Objects, error) {
-	rows, err := database.Query("SELECT * FROM object WHERE userID = " + userID + " AND type = \"" + objType + "\";")
+	rows, err := database.Query("SELECT objectID, url, local_path, creation_date, sync_date, picture_position, type, byte_size, downloaded FROM object WHERE userID = " + userID + " AND type = \"" + objType + "\";")
 	if err != nil {
 		return nil, err
 	}
 	var objects Objects
 	for rows.Next() {
 		var currentPicture Object
-		rows.Scan(&currentPicture.Attributes.DatabaseID, &currentPicture.Attributes.CreationDate, &currentPicture.Attributes.PicturePosition, &currentPicture.Attributes.SyncDate, &currentPicture.Attributes.Url, &currentPicture.Attributes.UserProperty)
+		rows.Scan(&currentPicture.Attributes.DatabaseID, &currentPicture.Attributes.Url, &currentPicture.Attributes.LocalPath, &currentPicture.Attributes.CreationDate, &currentPicture.Attributes.SyncDate, &currentPicture.Attributes.PicturePosition, &currentPicture.Type, &currentPicture.Attributes.BytesSize, &currentPicture.Attributes.Downloaded)
 		objects = append(objects, currentPicture)
 	}
 	return objects, nil
