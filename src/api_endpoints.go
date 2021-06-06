@@ -33,6 +33,7 @@ func InitializeApiEndPoints() {
 	s.HandleFunc("/login", handlerLogin)
 	s.HandleFunc("/register", handlerRegistration)
 	s.HandleFunc("/logout", handlerLogout)
+	s.HandleFunc("/updateDownloadedObject", handlerUpdateDownloadedObjetc)
 	fmt.Println("Running from localhost" + deployPort + serverBaseEndpoint)
 	log.Fatal(http.ListenAndServe(deployPort, r))
 }
@@ -261,4 +262,22 @@ func handlerLogout(w http.ResponseWriter, r *http.Request) {
 	username := r.Form.Get("username")
 	delete(apiKeys, username)
 	w.Write([]byte("{\"result\":\"ok\"}"))
+}
+
+func handlerUpdateDownloadedObjetc(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	objectID := r.Form.Get("objectID")
+	value := r.Form.Get("value")
+	fmt.Println("id: " + objectID + " value: " + value)
+	if value == "true" {
+		value = "1"
+	} else {
+		value = "0"
+	}
+	err := databaseUpdateDownloadedObject(objectID, value)
+	if err != nil {
+		writeGenericError(w, r, "", "", 999)
+		return
+	}
+	w.Write([]byte("{\"result\": \"ok\"}"))
 }

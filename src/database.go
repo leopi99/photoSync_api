@@ -106,3 +106,12 @@ func databaseRegister(user User) error {
 	_, err := database.Query("INSERT INTO user(username, password) VALUES(\"" + user.Username + "\", PASSWORD(\"" + user.password + "\"));")
 	return err
 }
+
+func databaseUpdateDownloadedObject(objectID string, value string) error {
+	_, err := database.Query("UPDATE object SET downloaded = \"" + value + "\" WHERE objectID = " + objectID + ";")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
