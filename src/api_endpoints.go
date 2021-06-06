@@ -268,7 +268,6 @@ func handlerUpdateDownloadedObjetc(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	objectID := r.Form.Get("objectID")
 	value := r.Form.Get("value")
-	fmt.Println("id: " + objectID + " value: " + value)
 	if value == "true" {
 		value = "1"
 	} else {
