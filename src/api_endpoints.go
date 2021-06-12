@@ -295,6 +295,7 @@ func handlerUpdateProfile(w http.ResponseWriter, r *http.Request) {
 	err := databaseUpdateProfile(user)
 	if err != nil {
 		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
+		return
 	}
 	w.Write([]byte("{\"result\": \"ok\"}"))
 }
