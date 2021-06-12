@@ -34,6 +34,7 @@ func InitializeApiEndPoints() {
 	s.HandleFunc("/register", handlerRegistration)
 	s.HandleFunc("/logout", handlerLogout)
 	s.HandleFunc("/updateDownloadedObject", handlerUpdateDownloadedObjetc)
+	s.HandleFunc("/updateProfile", handlerUpdateProfile)
 	fmt.Println("Running from localhost" + deployPort + serverBaseEndpoint)
 	log.Fatal(http.ListenAndServe(deployPort, r))
 }
@@ -277,6 +278,23 @@ func handlerUpdateDownloadedObjetc(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
 		return
+	}
+	w.Write([]byte("{\"result\": \"ok\"}"))
+}
+
+func handlerUpdateProfile(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	password := r.Form.Get("password")
+	username := r.Form.Get("username")
+	if password == "" {
+		writeGenericError(w, r, ErrorStruct{errorStatusCode: 400, ErrorType: "missing_parameter", Description: "One or more parameters needed are missing"})
+		return
+	}
+
+	var user User = User{Username: username, password: password}
+	err := databaseUpdateProfile(user)
+	if err != nil {
+		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
 	}
 	w.Write([]byte("{\"result\": \"ok\"}"))
 }
