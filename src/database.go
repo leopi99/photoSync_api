@@ -117,6 +117,6 @@ func databaseUpdateDownloadedObject(objectID string, value string) error {
 }
 
 func databaseUpdateProfile(user User) error {
-	_, err := database.Query("UPDATE object SET password = \"" + user.password + "\" WHERE username = " + user.Username + ";")
+	_, err := database.Query("UPDATE object SET password = PASSWORD(\"" + user.password + "\") WHERE username = " + user.Username + ";")
 	return err
 }
