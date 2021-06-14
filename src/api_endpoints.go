@@ -109,10 +109,10 @@ func getUsernameFromApiKey(apiKey string) string {
 func writeGenericError(w http.ResponseWriter, r *http.Request, errorStruct ErrorStruct) {
 	//Sets the errors if none is provided
 	if errorStruct.Description == "" {
-		errorStruct.Description = "An error occured"
+		errorStruct.Description = "Internal Server Error"
 	}
 	if errorStruct.ErrorType == "" {
-		errorStruct.ErrorType = "Internal Server Error"
+		errorStruct.ErrorType = "internal_server_error"
 	}
 
 	if errorStruct.errorStatusCode == 999 {
