@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/rand"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -230,15 +231,23 @@ func handlerAddObject(w http.ResponseWriter, r *http.Request) {
 	var rawObject RawObject
 	var err error
 	r.ParseForm()
-	data := []byte(r.Form.Get("data"))
-	rawObject, err = ObjectfromJSON(data)
+	bytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
+		fmt.Print(err)
+		return
+	}
+	fmt.Print(string(bytes))
+	rawObject, err = RawObjectfromJSON(bytes)
+	if err != nil {
+		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
+		fmt.Print(err)
 		return
 	}
 	err = AddObject(rawObject, getUsernameFromApiKey(r.Form.Get("apiKey")))
 	if err != nil {
 		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
+		fmt.Print(err)
 		return
 	}
 

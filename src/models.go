@@ -85,7 +85,7 @@ func (user User) toJSON() []byte {
 // 	UnMarshal function (object) => fromJSON
 //
 
-func ObjectfromJSON(jsonBytes []byte) (RawObject, error) {
+func RawObjectfromJSON(jsonBytes []byte) (RawObject, error) {
 	var obj RawObject
 	err := json.Unmarshal(jsonBytes, &obj)
 	return obj, err
