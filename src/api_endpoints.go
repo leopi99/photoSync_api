@@ -237,7 +237,6 @@ func handlerAddObject(w http.ResponseWriter, r *http.Request) {
 		fmt.Print(err)
 		return
 	}
-	fmt.Print(string(bytes))
 	rawObject, err = RawObjectfromJSON(bytes)
 	if err != nil {
 		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})

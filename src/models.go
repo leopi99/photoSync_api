@@ -1,6 +1,8 @@
 package main
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 ///
 /// 	Structs declaration
@@ -21,6 +23,7 @@ type MediaAttributes struct {
 	LocalPath       string `json:"local_path"`
 	DatabaseID      int    `json:"database_id"`
 	Downloaded      bool   `json:"downloaded"`
+	Extension       string `json:"extension"`
 }
 
 type Object struct {
@@ -29,8 +32,8 @@ type Object struct {
 }
 
 type RawObject struct {
-	ObjectStruct Object
-	FileBytes    []byte
+	ObjectStruct Object `json:"object"`
+	FileBytes    []byte `json:"fileBytes"`
 }
 
 type User struct {
