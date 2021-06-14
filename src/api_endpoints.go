@@ -29,7 +29,7 @@ func InitializeApiEndPoints() {
 	s.HandleFunc("/getPictures", handlerGetPictures)
 	s.HandleFunc("/getVideos", handlerGetVideos)
 	s.HandleFunc("/getAll", handlerGetObjects)
-	s.HandleFunc("/addObject", handlerAddPicture)
+	s.HandleFunc("/addObject", handlerAddObject)
 	s.HandleFunc("/login", handlerLogin)
 	s.HandleFunc("/register", handlerRegistration)
 	s.HandleFunc("/logout", handlerLogout)
@@ -70,11 +70,7 @@ func apiMiddleware(next http.Handler) http.Handler {
 }
 
 func checkApiKey(w http.ResponseWriter, r *http.Request) bool {
-	apiKey := r.URL.Query().Get("apiKey")
-	if apiKey == "" {
-		r.ParseForm()
-		apiKey = r.Form.Get("apiKey")
-	}
+	apiKey := getApiKey(r)
 	contained := containsMap(apiKeys, apiKey)
 	if !contained {
 		w.Write(ErrorStruct{ErrorType: "Auth", Description: "This operation needs authentication"}.toJSON())
@@ -127,6 +123,16 @@ func tokenGenerator() string {
 	rand.Read(b)
 	fmt.Println("New api auth generated")
 	return fmt.Sprintf("%x", b)
+}
+
+//Returns the apiKey from the request
+func getApiKey(r *http.Request) string {
+	apiKey := r.URL.Query().Get("apiKey")
+	if apiKey == "" {
+		r.ParseForm()
+		apiKey = r.Form.Get("apiKey")
+	}
+	return apiKey
 }
 
 ///
@@ -196,8 +202,7 @@ func handlerGetObjects(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handlerAddPicture(w http.ResponseWriter, r *http.Request) {
-	// TODO: Add the Object generation from the POST request
+func handlerAddObject(w http.ResponseWriter, r *http.Request) {
 	var rawObject RawObject
 	var err error
 	r.ParseForm()
@@ -272,7 +277,7 @@ func handlerRegistration(w http.ResponseWriter, r *http.Request) {
 
 func handlerLogout(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	username := r.Form.Get("username")
+	username := getUsernameFromApiKey(getApiKey(r))
 	delete(apiKeys, username)
 	w.Write([]byte("{\"result\":\"ok\"}"))
 }
