@@ -60,15 +60,16 @@ func GetUserObjectsFiltered(userID string, objType string) (Objects, error) {
 	return objects, nil
 }
 
-//	Adds a picture into the db
-func AddPicture(picture RawObject) error {
-	imagePath, size, err := CreatePicture(picture.FileBytes, picture.ObjectStruct.Attributes.CreationDate)
+//	Adds an object into the db
+func AddObject(picture RawObject, username string) error {
+	filePath, size, err := CreateObjectFile(picture.FileBytes, picture.ObjectStruct.Attributes.CreationDate, picture.ObjectStruct.Type, username)
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 	picture.ObjectStruct.Attributes.BytesSize = size
-	picture.ObjectStruct.Attributes.Url = imagePath
-	fmt.Println("imagePath: " + imagePath)
+	picture.ObjectStruct.Attributes.Url = filePath
+	fmt.Println("imagePath: " + filePath)
 	fmt.Printf("imageSize: %d", size)
 	//TODO: implement the image save into the db
 	return nil
