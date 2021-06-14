@@ -29,7 +29,7 @@ func InitializeApiEndPoints() {
 	s.HandleFunc("/getPictures", handlerGetPictures)
 	s.HandleFunc("/getVideos", handlerGetVideos)
 	s.HandleFunc("/getAll", handlerGetObjects)
-	s.HandleFunc("/addPicture", handlerAddPicture)
+	s.HandleFunc("/addObject", handlerAddPicture)
 	s.HandleFunc("/login", handlerLogin)
 	s.HandleFunc("/register", handlerRegistration)
 	s.HandleFunc("/logout", handlerLogout)
@@ -81,6 +81,17 @@ func checkApiKey(w http.ResponseWriter, r *http.Request) bool {
 
 	}
 	return contained
+}
+
+func getUsernameFromApiKey(apiKey string) string {
+	var username string
+	for currentKey, value := range apiKeys {
+		if value == apiKey {
+			username = currentKey
+			break
+		}
+	}
+	return username
 }
 
 func writeGenericError(w http.ResponseWriter, r *http.Request, errorStruct ErrorStruct) {
@@ -189,13 +200,14 @@ func handlerAddPicture(w http.ResponseWriter, r *http.Request) {
 	// TODO: Add the Object generation from the POST request
 	var rawObject RawObject
 	var err error
-	data := []byte(r.PostForm.Get("data"))
+	r.ParseForm()
+	data := []byte(r.Form.Get("data"))
 	rawObject, err = ObjectfromJSON(data)
 	if err != nil {
 		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
 		return
 	}
-	err = AddPicture(rawObject)
+	err = AddObject(rawObject, getUsernameFromApiKey(r.Form.Get("apiKey")))
 	if err != nil {
 		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
 		return
