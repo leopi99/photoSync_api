@@ -9,23 +9,33 @@ import (
 	"github.com/gorilla/mux"
 )
 
+///Current todo work:
+/// - Check that the object creation works.
+/// - Create the user existance check during signup
+
 const (
 	serverBaseEndpoint string = "/photoSync/api/v1"
 	deployPort         string = ":8010"
 )
 
 var (
+	//Contains the api endpoints that doesn't need an apiKey to have the access
 	authNotNeeded []string = []string{"/login", "/register"}
-	apiKeys       map[string]string
+	//Contains the apiKeys assigned to the users (username - apiKey)
+	apiKeys map[string]string
 )
 
 //	Initialize the listeners on the endoponts
 func InitializeApiEndPoints() {
 	apiKeys = make(map[string]string)
 	fmt.Println("Initializating api endpoints")
+	//Creates the router
 	r := mux.NewRouter()
+	//Creates the subRouter from the baseEndpoint
 	s := r.PathPrefix(serverBaseEndpoint).Subrouter()
+	//Sets the middleware that checks the apiKey
 	s.Use(apiMiddleware)
+	//Sets the handlers for the endpoints
 	s.HandleFunc("/getPictures", handlerGetPictures)
 	s.HandleFunc("/getVideos", handlerGetVideos)
 	s.HandleFunc("/getAll", handlerGetObjects)
@@ -57,6 +67,7 @@ func apiMiddleware(next http.Handler) http.Handler {
 				break
 			}
 		}
+		//Handles the request; checks the apikey if needed, then proceeds to handle the request
 		if !found {
 			if checkApiKey(w, r) {
 				next.ServeHTTP(w, r)
@@ -69,6 +80,7 @@ func apiMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+//Checks that the apiKey is correct
 func checkApiKey(w http.ResponseWriter, r *http.Request) bool {
 	apiKey := getApiKey(r)
 	contained := containsMap(apiKeys, apiKey)
@@ -79,6 +91,7 @@ func checkApiKey(w http.ResponseWriter, r *http.Request) bool {
 	return contained
 }
 
+//Returns the username from the apiKey
 func getUsernameFromApiKey(apiKey string) string {
 	var username string
 	for currentKey, value := range apiKeys {
@@ -90,6 +103,8 @@ func getUsernameFromApiKey(apiKey string) string {
 	return username
 }
 
+//Writes and error into the response
+//This does not close the request, needs to add a return after the call to the function
 func writeGenericError(w http.ResponseWriter, r *http.Request, errorStruct ErrorStruct) {
 	//Sets the errors if none is provided
 	if errorStruct.Description == "" {
@@ -106,6 +121,8 @@ func writeGenericError(w http.ResponseWriter, r *http.Request, errorStruct Error
 	w.Write(errorStruct.toJSON())
 }
 
+//Checks if a value is present in a map
+//Only used for the apiKey
 func containsMap(thisMap map[string]string, word string) bool {
 	contained := false
 	for _, value := range thisMap {
@@ -142,11 +159,14 @@ func getApiKey(r *http.Request) string {
 func handlerGetPictures(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	userID := r.Form.Get("userID")
+	//Checks if the userID is in the request
 	if userID == "" {
 		writeGenericError(w, r, ErrorStruct{ErrorType: "user_not_selected", errorStatusCode: 400, Description: "User identification not set"})
 		return
 	}
+	//Gets the objects for a user
 	objects, err := GetUserObjectsFiltered(userID, "picture")
+	//Handles the response
 	if err != nil {
 		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
 		fmt.Print(err)
@@ -163,11 +183,13 @@ func handlerGetPictures(w http.ResponseWriter, r *http.Request) {
 func handlerGetVideos(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	userID := r.Form.Get("userID")
+	//Gets the objects for a user
 	if userID == "" {
 		writeGenericError(w, r, ErrorStruct{ErrorType: "user_not_selected", errorStatusCode: 400, Description: "User identification not set"})
 		return
 	}
 	objects, err := GetUserObjectsFiltered(userID, "video")
+	//Handles the response
 	if err != nil {
 		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
 		fmt.Print(err)
@@ -184,11 +206,13 @@ func handlerGetVideos(w http.ResponseWriter, r *http.Request) {
 func handlerGetObjects(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	userID := r.Form.Get("userID")
+	//Gets the objects for a user
 	if userID == "" {
 		writeGenericError(w, r, ErrorStruct{ErrorType: "user_not_selected", errorStatusCode: 400, Description: "User identification not set"})
 		return
 	}
 	objects, err := GetUserObjects(userID)
+	//Handles the response
 	if err != nil {
 		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
 		fmt.Print(err)
@@ -217,16 +241,21 @@ func handlerAddObject(w http.ResponseWriter, r *http.Request) {
 		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
 		return
 	}
+
+	w.Write([]byte("{\"result\":\"ok\"}"))
+
 }
 
 func handlerLogin(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	username := r.Form.Get("username")
 	password := r.Form.Get("password")
+	//Checks that all the info needed are in the request
 	if username == "" || password == "" {
 		writeGenericError(w, r, ErrorStruct{ErrorType: "missing_parameter", errorStatusCode: 400, Description: "One or more parameters needed are missing"})
 		return
 	}
+	//Checks the user existence and that the password is correct
 	user, err := databaseLogin(User{password: password, Username: username})
 	if err != nil {
 		if err.Error() == "user_not_found" {
@@ -236,11 +265,13 @@ func handlerLogin(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	//If no user is returned => the query didn't produce any rows => no user with the password
 	if user.Username == "" {
 		writeGenericError(w, r, ErrorStruct{ErrorType: "wrong_credentials", errorStatusCode: 400, Description: "Wrong credentials"})
 		return
 	}
 	var key string
+	//Generates the apiKey if is the first login since the boot of the api
 	if apiKeys[username] == "" {
 		key = tokenGenerator()
 		apiKeys[username] = key
@@ -256,6 +287,7 @@ func handlerRegistration(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	username := r.Form.Get("username")
 	password := r.Form.Get("password")
+	//Checks that all the info needed are in the request
 	if username == "" || password == "" {
 		writeGenericError(w, r, ErrorStruct{ErrorType: "missing_parameter", errorStatusCode: 400, Description: "One or more parameters needed are missing"})
 		return
@@ -264,6 +296,7 @@ func handlerRegistration(w http.ResponseWriter, r *http.Request) {
 	var user User
 	user.Username = username
 	user.password = password
+	//Creates the user into the db
 	err := databaseRegister(user)
 
 	if err != nil {
@@ -278,6 +311,7 @@ func handlerRegistration(w http.ResponseWriter, r *http.Request) {
 func handlerLogout(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	username := getUsernameFromApiKey(getApiKey(r))
+	//Removes the apiKey (and username) from the apiKeys map
 	delete(apiKeys, username)
 	w.Write([]byte("{\"result\":\"ok\"}"))
 }
