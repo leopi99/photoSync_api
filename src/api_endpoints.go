@@ -231,6 +231,7 @@ func handlerAddObject(w http.ResponseWriter, r *http.Request) {
 	var rawObject RawObject
 	var err error
 	r.ParseForm()
+	userID := r.Form.Get("userID")
 	bytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
@@ -243,7 +244,7 @@ func handlerAddObject(w http.ResponseWriter, r *http.Request) {
 		fmt.Print(err)
 		return
 	}
-	err = AddObject(rawObject, getUsernameFromApiKey(r.Form.Get("apiKey")))
+	err = AddObject(rawObject, getUsernameFromApiKey(r.Form.Get("apiKey")), userID)
 	if err != nil {
 		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
 		fmt.Print(err)

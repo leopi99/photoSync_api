@@ -61,7 +61,7 @@ func GetUserObjectsFiltered(userID string, objType string) (Objects, error) {
 }
 
 //	Adds an object into the db
-func AddObject(picture RawObject, username string) error {
+func AddObject(picture RawObject, username string, userID string) error {
 	//TODO: change the objectName from the creationDate to something more unique
 	filePath, size, err := CreateObjectFile(picture.FileBytes, picture.ObjectStruct.Attributes.CreationDate, picture.ObjectStruct.Attributes.Extension, username)
 	if err != nil {
@@ -72,7 +72,16 @@ func AddObject(picture RawObject, username string) error {
 	picture.ObjectStruct.Attributes.Url = filePath
 	fmt.Println("imagePath: " + filePath)
 	fmt.Printf("imageSize: %d", size)
-	//TODO: implement the image save into the db
+	query := "INSERT INTO object (userID, url, local_path, creation_date, sync_date, picture_position, type, byte_size, downloaded, extension) VALUES ("
+	query += userID + ",\"url_not_supported\",\"" + picture.ObjectStruct.Attributes.LocalPath + "\", \"" + picture.ObjectStruct.Attributes.CreationDate + "\","
+	query += "\"" + picture.ObjectStruct.Attributes.SyncDate + "\",\"" + picture.ObjectStruct.Attributes.PicturePosition + "\", \"" + picture.ObjectStruct.Type + "\","
+	query += fmt.Sprintf("%d", size) + ", true, \"" + picture.ObjectStruct.Attributes.Extension + "\");"
+	fmt.Println("Query: " + query)
+	_, err = database.Query(query)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
 	return nil
 }
 
