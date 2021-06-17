@@ -11,7 +11,6 @@ import (
 )
 
 ///Current todo work:
-/// - Check that the object creation works.
 /// - Create the user existance check during signup
 
 const (

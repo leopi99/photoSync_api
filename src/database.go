@@ -62,7 +62,6 @@ func GetUserObjectsFiltered(userID string, objType string) (Objects, error) {
 
 //	Adds an object into the db
 func AddObject(picture RawObject, username string, userID string) error {
-	//TODO: change the objectName from the creationDate to something more unique
 	filePath, size, err := CreateObjectFile(picture.FileBytes, picture.ObjectStruct.Attributes.CreationDate, picture.ObjectStruct.Attributes.Extension, username)
 	if err != nil {
 		fmt.Println(err)
