@@ -3,7 +3,7 @@ package main
 import "fmt"
 
 const (
-	apiVersion string = "0.5"
+	apiVersion string = "0.5.5"
 )
 
 func main() {
