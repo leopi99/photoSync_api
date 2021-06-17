@@ -24,6 +24,7 @@ type MediaAttributes struct {
 	DatabaseID      int    `json:"database_id"`
 	Downloaded      bool   `json:"downloaded"`
 	Extension       string `json:"extension"`
+	LocalID         int    `json:"local_id"`
 }
 
 type Object struct {
