@@ -31,7 +31,6 @@ func CreateObjectFile(object []byte, objectName string, objectExtension string, 
 	if exists {
 		return "", 0, errors.New("file_already_exists")
 	}
-	fmt.Println("Saving the file at: " + objectPath)
 	err = os.WriteFile(objectPath, object, 0666)
 	if err != nil {
 		fmt.Print(err)
