@@ -76,7 +76,6 @@ func AddObject(picture RawObject, username string, userID string) error {
 	query += "\"" + picture.ObjectStruct.Attributes.SyncDate + "\",\"" + picture.ObjectStruct.Attributes.PicturePosition + "\", \"" + picture.ObjectStruct.Type + "\","
 	query += fmt.Sprintf("%d", size) + ", true, \"" + picture.ObjectStruct.Attributes.Extension + "\","
 	query += fmt.Sprintf("%d", picture.ObjectStruct.Attributes.LocalID) + ");"
-	fmt.Println("Query: " + query)
 	_, err = database.Query(query)
 	if err != nil {
 		fmt.Println(err)
