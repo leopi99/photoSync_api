@@ -10,7 +10,7 @@ This is the backend for the [PhotoSync app](https://github.com/leopi99/photoSync
 - Handles login and registration
 - Adds pictures to the database; this does not saves the image in the database, using the structured paths uses the username and the file creation date.
 - Saves the media files in the server
-- Serve the syncronized files (currently pictures and videos)
+- Serve the syncronized files (currently pictures and videos, tested only with photos)
 - Available outside your house [TODO] (maybe using ngrok)
 
 ## How to setup the server
@@ -21,4 +21,4 @@ This is the backend for the [PhotoSync app](https://github.com/leopi99/photoSync
 - To run the api you can use (inside the src folder) run `go run .` or you can build the project using `go build .` and then running the executable created.
 
 ## Why PhotoSync?
-Since the popular Google photo have dropped the unlimited storage, I thougth to create this to have more control on where my photos are stored and I can upgrade the storage size when I want 
+Since the popular Google photo have dropped the unlimited storage, I thougth to create this to have the storage size when I want
