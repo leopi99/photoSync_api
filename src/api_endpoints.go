@@ -6,12 +6,14 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 )
 
 ///Current todo work:
 /// - Create the user existance check during signup
+/// - Create the file server
 
 const (
 	serverBaseEndpoint string = "/photoSync/api/v1"
@@ -45,6 +47,7 @@ func InitializeApiEndPoints() {
 	s.HandleFunc("/logout", handlerLogout)
 	s.HandleFunc("/updateDownloadedObject", handlerUpdateDownloadedObjetc)
 	s.HandleFunc("/updateProfile", handlerUpdateProfile)
+	s.HandleFunc("/object/{fileName}", handlerServeObject)
 	fmt.Println("Running from localhost" + deployPort + serverBaseEndpoint)
 	log.Fatal(http.ListenAndServe(deployPort, r))
 }
@@ -357,4 +360,24 @@ func handlerUpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write([]byte("{\"result\": \"ok\"}"))
+}
+
+func handlerServeObject(w http.ResponseWriter, r *http.Request) {
+	username := getUsernameFromApiKey(getApiKey(r))
+	fileName := mux.Vars(r)["fileName"]
+	path := filesPath + username + postBasePath + fileName
+	fmt.Print("Path searched: " + path)
+	file, err := os.OpenFile(path, os.O_RDWR, 0644)
+	if err != nil {
+		fmt.Println(err)
+		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
+		return
+	}
+	modDate, err := file.Stat()
+	if err != nil {
+		fmt.Println(err)
+		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
+		return
+	}
+	http.ServeContent(w, r, path, modDate.ModTime(), file)
 }
