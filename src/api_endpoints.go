@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -371,5 +372,6 @@ func handlerServeObject(w http.ResponseWriter, r *http.Request) {
 		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
 		return
 	}
-	w.Write(file)
+	str := base64.StdEncoding.EncodeToString(file)
+	w.Write([]byte(str))
 }
