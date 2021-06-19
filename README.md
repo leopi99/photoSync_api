@@ -7,11 +7,11 @@ This is the backend for the [PhotoSync app](https://github.com/leopi99/photoSync
 
 ## Features
 
-- Handles login and registration
-- Adds pictures to the database; this does not saves the image in the database, using the structured paths uses the username and the file creation date.
-- Saves the media files in the server
-- Serve the syncronized files (currently pictures and videos, tested only with photos)
-- Available outside your house [TODO] (maybe using ngrok)
+- [x] Handles login and registration
+- [x] Adds pictures to the database; this does not saves the image in the database, using the structured paths uses the username and the file creation date.
+- [x] Saves the media files in the server
+- [x] Serve the syncronized files (currently pictures and videos, tested only with photos)
+- [] Available outside your house [TODO] (maybe using ngrok)
 
 ## How to setup the server
 
