@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/gorilla/mux"
 )
@@ -366,18 +365,11 @@ func handlerServeObject(w http.ResponseWriter, r *http.Request) {
 	username := getUsernameFromApiKey(getApiKey(r))
 	fileName := mux.Vars(r)["fileName"]
 	path := filesPath + username + postBasePath + fileName
-	fmt.Print("Path searched: " + path)
-	file, err := os.OpenFile(path, os.O_RDWR, 0644)
+	file, err := ioutil.ReadFile(path)
 	if err != nil {
 		fmt.Println(err)
 		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
 		return
 	}
-	modDate, err := file.Stat()
-	if err != nil {
-		fmt.Println(err)
-		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
-		return
-	}
-	http.ServeContent(w, r, path, modDate.ModTime(), file)
+	w.Write(file)
 }

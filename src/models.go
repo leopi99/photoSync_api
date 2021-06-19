@@ -15,7 +15,6 @@ type ErrorStruct struct {
 }
 
 type MediaAttributes struct {
-	Url             string `json:"url"`
 	SyncDate        string `json:"sync_date"`
 	CreationDate    string `json:"creation_date"`
 	PicturePosition string `json:"position"`
