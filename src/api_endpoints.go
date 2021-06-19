@@ -45,7 +45,6 @@ func InitializeApiEndPoints() {
 	s.HandleFunc("/login", handlerLogin)
 	s.HandleFunc("/register", handlerRegistration)
 	s.HandleFunc("/logout", handlerLogout)
-	s.HandleFunc("/updateDownloadedObject", handlerUpdateDownloadedObjetc)
 	s.HandleFunc("/updateProfile", handlerUpdateProfile)
 	s.HandleFunc("/object/{fileName}", handlerServeObject)
 	fmt.Println("Running from localhost" + deployPort + serverBaseEndpoint)
@@ -88,6 +87,7 @@ func checkApiKey(w http.ResponseWriter, r *http.Request) bool {
 	apiKey := getApiKey(r)
 	contained := containsMap(apiKeys, apiKey)
 	if !contained {
+		fmt.Println("Api key not correct")
 		w.Write(ErrorStruct{ErrorType: "Auth", Description: "This operation needs authentication"}.toJSON())
 
 	}
@@ -325,23 +325,6 @@ func handlerLogout(w http.ResponseWriter, r *http.Request) {
 	//Removes the apiKey (and username) from the apiKeys map
 	delete(apiKeys, username)
 	w.Write([]byte("{\"result\":\"ok\"}"))
-}
-
-func handlerUpdateDownloadedObjetc(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	objectID := r.Form.Get("objectID")
-	value := r.Form.Get("value")
-	if value == "true" {
-		value = "1"
-	} else {
-		value = "0"
-	}
-	err := databaseUpdateDownloadedObject(objectID, value)
-	if err != nil {
-		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
-		return
-	}
-	w.Write([]byte("{\"result\": \"ok\"}"))
 }
 
 func handlerUpdateProfile(w http.ResponseWriter, r *http.Request) {

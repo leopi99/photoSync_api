@@ -21,7 +21,6 @@ type MediaAttributes struct {
 	BytesSize       int64  `json:"bytes_size"`
 	LocalPath       string `json:"local_path"`
 	DatabaseID      int    `json:"database_id"`
-	Downloaded      bool   `json:"downloaded"`
 	Extension       string `json:"extension"`
 	LocalID         int    `json:"local_id"`
 }

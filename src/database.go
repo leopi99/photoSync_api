@@ -32,14 +32,14 @@ func InitializeDatabaseConnection() error {
 
 //	Returns all the pictures and the videos saved for a user
 func GetUserObjects(userID string) (Objects, error) {
-	rows, err := database.Query("SELECT objectID, local_path, creation_date, sync_date, picture_position, type, byte_size, downloaded, extension, local_id FROM object WHERE userID = " + userID + ";")
+	rows, err := database.Query("SELECT objectID, local_path, creation_date, sync_date, picture_position, type, byte_size, extension, local_id FROM object WHERE userID = " + userID + ";")
 	if err != nil {
 		return nil, err
 	}
 	var objects Objects
 	for rows.Next() {
 		var currentPicture Object
-		rows.Scan(&currentPicture.Attributes.DatabaseID, &currentPicture.Attributes.LocalPath, &currentPicture.Attributes.CreationDate, &currentPicture.Attributes.SyncDate, &currentPicture.Attributes.PicturePosition, &currentPicture.Type, &currentPicture.Attributes.BytesSize, &currentPicture.Attributes.Downloaded, &currentPicture.Attributes.Extension, &currentPicture.Attributes.LocalID)
+		rows.Scan(&currentPicture.Attributes.DatabaseID, &currentPicture.Attributes.LocalPath, &currentPicture.Attributes.CreationDate, &currentPicture.Attributes.SyncDate, &currentPicture.Attributes.PicturePosition, &currentPicture.Type, &currentPicture.Attributes.BytesSize, &currentPicture.Attributes.Extension, &currentPicture.Attributes.LocalID)
 		objects = append(objects, currentPicture)
 	}
 	return objects, nil
@@ -47,14 +47,14 @@ func GetUserObjects(userID string) (Objects, error) {
 
 //	Returns all the pictures or videos of a user
 func GetUserObjectsFiltered(userID string, objType string) (Objects, error) {
-	rows, err := database.Query("SELECT objectID, local_path, creation_date, sync_date, picture_position, type, byte_size, downloaded, extension, local_id FROM object WHERE userID = " + userID + " AND type = \"" + objType + "\";")
+	rows, err := database.Query("SELECT objectID, local_path, creation_date, sync_date, picture_position, type, byte_size, extension, local_id FROM object WHERE userID = " + userID + " AND type = \"" + objType + "\";")
 	if err != nil {
 		return nil, err
 	}
 	var objects Objects
 	for rows.Next() {
 		var currentPicture Object
-		rows.Scan(&currentPicture.Attributes.DatabaseID, &currentPicture.Attributes.LocalPath, &currentPicture.Attributes.CreationDate, &currentPicture.Attributes.SyncDate, &currentPicture.Attributes.PicturePosition, &currentPicture.Type, &currentPicture.Attributes.BytesSize, &currentPicture.Attributes.Downloaded, &currentPicture.Attributes.Extension, &currentPicture.Attributes.LocalID)
+		rows.Scan(&currentPicture.Attributes.DatabaseID, &currentPicture.Attributes.LocalPath, &currentPicture.Attributes.CreationDate, &currentPicture.Attributes.SyncDate, &currentPicture.Attributes.PicturePosition, &currentPicture.Type, &currentPicture.Attributes.BytesSize, &currentPicture.Attributes.Extension, &currentPicture.Attributes.LocalID)
 		objects = append(objects, currentPicture)
 	}
 	return objects, nil
@@ -69,10 +69,10 @@ func AddObject(picture RawObject, username string, userID string) error {
 	}
 	picture.ObjectStruct.Attributes.BytesSize = size
 	//	Generates the query
-	query := "INSERT INTO object (userID, local_path, creation_date, sync_date, picture_position, type, byte_size, downloaded, extension, local_id) VALUES ("
+	query := "INSERT INTO object (userID, local_path, creation_date, sync_date, picture_position, type, byte_size, extension, local_id) VALUES ("
 	query += userID + ",\"" + picture.ObjectStruct.Attributes.LocalPath + "\", \"" + picture.ObjectStruct.Attributes.CreationDate + "\","
 	query += "\"" + picture.ObjectStruct.Attributes.SyncDate + "\",\"" + picture.ObjectStruct.Attributes.PicturePosition + "\", \"" + picture.ObjectStruct.Type + "\","
-	query += fmt.Sprintf("%d", size) + ", true, \"" + picture.ObjectStruct.Attributes.Extension + "\","
+	query += fmt.Sprintf("%d", size) + ",\"" + picture.ObjectStruct.Attributes.Extension + "\","
 	query += fmt.Sprintf("%d", picture.ObjectStruct.Attributes.LocalID) + ");"
 	//	Executes the query
 	_, err = database.Query(query)
@@ -114,15 +114,6 @@ func databaseLogin(user User) (User, error) {
 func databaseRegister(user User) error {
 	_, err := database.Query("INSERT INTO user(username, password) VALUES(\"" + user.Username + "\", PASSWORD(\"" + user.password + "\"));")
 	return err
-}
-
-func databaseUpdateDownloadedObject(objectID string, value string) error {
-	_, err := database.Query("UPDATE object SET downloaded = \"" + value + "\" WHERE objectID = " + objectID + ";")
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func databaseUpdateProfile(user User) error {
