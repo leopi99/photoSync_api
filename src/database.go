@@ -69,11 +69,13 @@ func AddObject(picture RawObject, username string, userID string) error {
 	}
 	picture.ObjectStruct.Attributes.BytesSize = size
 	picture.ObjectStruct.Attributes.Url = filePath
+	//	Generates the query
 	query := "INSERT INTO object (userID, url, local_path, creation_date, sync_date, picture_position, type, byte_size, downloaded, extension, local_id) VALUES ("
 	query += userID + ",\"url_not_supported\",\"" + picture.ObjectStruct.Attributes.LocalPath + "\", \"" + picture.ObjectStruct.Attributes.CreationDate + "\","
 	query += "\"" + picture.ObjectStruct.Attributes.SyncDate + "\",\"" + picture.ObjectStruct.Attributes.PicturePosition + "\", \"" + picture.ObjectStruct.Type + "\","
 	query += fmt.Sprintf("%d", size) + ", true, \"" + picture.ObjectStruct.Attributes.Extension + "\","
 	query += fmt.Sprintf("%d", picture.ObjectStruct.Attributes.LocalID) + ");"
+	//	Executes the query
 	_, err = database.Query(query)
 	if err != nil {
 		fmt.Println(err)
