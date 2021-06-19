@@ -3,7 +3,7 @@
 
 This is the backend for the [PhotoSync app](https://github.com/leopi99/photoSync_app).
 
-## Not stable for "production" this is still in alpha, everything can change
+## Not stable for "production" this is still in beta, everything can change
 
 ## Features
 
