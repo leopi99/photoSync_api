@@ -1,3 +1,7 @@
+# Would like to help the development?
+You are encouraged to help with the development of this project, feel free to create PR.
+Creating issues that can help me getting the app or the api better would be appreciated.
+
 # PhotoSync
 ## What is PhotoSync_api?
 
