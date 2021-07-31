@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -24,12 +25,12 @@ var (
 	//Contains the api endpoints that doesn't need an apiKey to have the access
 	authNotNeeded []string = []string{"/login", "/register"}
 	//Contains the apiKeys assigned to the users (username - apiKey)
-	apiKeys map[string]string
+	apiKeys map[string]User
 )
 
 //	Initialize the listeners on the endoponts
 func InitializeApiEndPoints() {
-	apiKeys = make(map[string]string)
+	apiKeys = make(map[string]User)
 	fmt.Println("Initializating api endpoints")
 	//Creates the router
 	r := mux.NewRouter()
@@ -98,12 +99,24 @@ func checkApiKey(w http.ResponseWriter, r *http.Request) bool {
 func getUsernameFromApiKey(apiKey string) string {
 	var username string
 	for currentKey, value := range apiKeys {
-		if value == apiKey {
+		if value.ApiKey == apiKey {
 			username = currentKey
 			break
 		}
 	}
 	return username
+}
+
+//Returns the userID from the apiKey
+func getUserIDFromApiKey(apiKey string) int {
+	var userID int
+	for _, value := range apiKeys {
+		if value.ApiKey == apiKey {
+			userID = value.UserID
+			break
+		}
+	}
+	return userID
 }
 
 //Writes and error into the response
@@ -124,12 +137,11 @@ func writeGenericError(w http.ResponseWriter, r *http.Request, errorStruct Error
 	w.Write(errorStruct.toJSON())
 }
 
-//Checks if a value is present in a map
-//Only used for the apiKey
-func containsMap(thisMap map[string]string, word string) bool {
+//Returns true if the apiKey is in the map of users
+func containsMap(thisMap map[string]User, apiKey string) bool {
 	contained := false
 	for _, value := range thisMap {
-		if value == word {
+		if value.ApiKey == apiKey {
 			contained = true
 			break
 		}
@@ -161,10 +173,10 @@ func getApiKey(r *http.Request) string {
 
 func handlerGetPictures(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	userID := r.Form.Get("userID")
+	userID := strconv.Itoa(getUserIDFromApiKey(getApiKey(r)))
 	//Checks if the userID is in the request
 	if userID == "" {
-		writeGenericError(w, r, ErrorStruct{ErrorType: "user_not_selected", errorStatusCode: 400, Description: "User identification not set"})
+		writeGenericError(w, r, ErrorStruct{ErrorType: "user_error", errorStatusCode: 400, Description: "User identification error"})
 		return
 	}
 	//Gets the objects for a user
@@ -185,10 +197,10 @@ func handlerGetPictures(w http.ResponseWriter, r *http.Request) {
 
 func handlerGetVideos(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	userID := r.Form.Get("userID")
+	userID := strconv.Itoa(getUserIDFromApiKey(getApiKey(r)))
 	//Gets the objects for a user
 	if userID == "" {
-		writeGenericError(w, r, ErrorStruct{ErrorType: "user_not_selected", errorStatusCode: 400, Description: "User identification not set"})
+		writeGenericError(w, r, ErrorStruct{ErrorType: "user_error", errorStatusCode: 400, Description: "User identification error"})
 		return
 	}
 	objects, err := GetUserObjectsFiltered(userID, "video")
@@ -208,10 +220,10 @@ func handlerGetVideos(w http.ResponseWriter, r *http.Request) {
 
 func handlerGetObjects(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	userID := r.Form.Get("userID")
+	userID := strconv.Itoa(getUserIDFromApiKey(getApiKey(r)))
 	//Gets the objects for a user
 	if userID == "" {
-		writeGenericError(w, r, ErrorStruct{ErrorType: "user_not_selected", errorStatusCode: 400, Description: "User identification not set"})
+		writeGenericError(w, r, ErrorStruct{ErrorType: "user_error", errorStatusCode: 400, Description: "User identification error"})
 		return
 	}
 	objects, err := GetUserObjects(userID)
@@ -233,7 +245,7 @@ func handlerAddObject(w http.ResponseWriter, r *http.Request) {
 	var rawObject RawObject
 	var err error
 	r.ParseForm()
-	userID := r.Form.Get("userID")
+	userID := strconv.Itoa(getUserIDFromApiKey(getApiKey(r)))
 	bytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		writeGenericError(w, r, ErrorStruct{errorStatusCode: 999})
@@ -283,11 +295,11 @@ func handlerLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	var key string
 	//Generates the apiKey if is the first login since the boot of the api
-	if apiKeys[username] == "" {
+	if apiKeys[username].ApiKey == "" {
 		key = tokenGenerator()
-		apiKeys[username] = key
+		apiKeys[username] = User{Username: username, ApiKey: key, UserID: user.UserID}
 	} else {
-		key = apiKeys[username]
+		key = apiKeys[username].ApiKey
 	}
 
 	user.ApiKey = key
